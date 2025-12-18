@@ -1,0 +1,7 @@
+community/
+development/
+.env
+docs/
+node_modules/
+dist/
+.husky/

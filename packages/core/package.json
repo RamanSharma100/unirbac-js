@@ -1,0 +1,19 @@
+{
+  "name": "@unirbac/core",
+  "version": "0.0.1",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "swc src -d dist",
+    "dev": "swc src -d dist -w",
+    "clean": "rm -rf dist"
+  },
+  "author": "",
+  "keywords": [],
+  "license": "ISC",
+  "packageManager": "pnpm@10.26.0"
+}
