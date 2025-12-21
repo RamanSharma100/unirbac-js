@@ -1,6 +1,6 @@
 export type PermissionName = string;
 
-export interface Permission {
+export type Permission = {
   name: PermissionName;
   description?: string;
-}
+};

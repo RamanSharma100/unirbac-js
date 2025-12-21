@@ -1,8 +1,8 @@
 import { PermissionName } from './Permission';
 
-export interface Role {
+export type Role = {
   name: string;
   level: number;
   permissions: PermissionName[];
   inherits?: string[];
-}
+};

@@ -1,8 +1,8 @@
-import { PermissionName } from './Permission';
+import { PermissionName } from './permission';
 
-export interface Subject {
+export type Subject = {
   id: string;
   roles: string[];
   permissions?: PermissionName[];
   attributes?: Record<string, unknown>;
-}
+};

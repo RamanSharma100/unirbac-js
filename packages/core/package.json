@@ -10,10 +10,17 @@
   "scripts": {
     "build": "swc src -d dist",
     "dev": "swc src -d dist -w",
-    "clean": "rm -rf dist"
+    "clean": "rm -rf dist",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "test:watch": "vitest"
   },
   "author": "",
   "keywords": [],
   "license": "ISC",
-  "packageManager": "pnpm@10.26.0"
+  "packageManager": "pnpm@10.26.0",
+  "devDependencies": {
+    "@vitest/coverage-v8": "4.0.16",
+    "vitest": "^4.0.16"
+  }
 }
