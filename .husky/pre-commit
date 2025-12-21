@@ -1,2 +1,3 @@
 pnpm test:coverage
+git add .
 pnpm lint-staged
