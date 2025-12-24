@@ -5,4 +5,5 @@ export type Role = {
   level: number;
   permissions: PermissionName[];
   inherits?: string[];
+  denies?: string[];
 };

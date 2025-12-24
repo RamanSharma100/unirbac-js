@@ -207,4 +207,130 @@ describe('RBACEngine', () => {
       expect(policyCalled).toBe(false);
     });
   });
+
+  describe('role levels', () => {
+    it('should allow access when subject has multiple roles with different levels', async () => {
+      engine.addRole({
+        name: 'editor',
+        level: 50,
+        permissions: ['post.update']
+      });
+
+      engine.addRole({
+        name: 'viewer',
+        level: 10,
+        permissions: ['post.read']
+      });
+
+      const subject: Subject = { id: '1', roles: ['viewer', 'editor'], permissions: [] };
+
+      const result = await engine.can(subject, 'post.update');
+
+      expect(result.allowed).toBe(true);
+      expect(result.permission).toBe('post.update');
+    });
+
+    it('should allow access to lower level permission when having higher level role', async () => {
+      engine.addRole({
+        name: 'editor',
+        level: 50,
+        permissions: ['post.update']
+      });
+
+      engine.addRole({
+        name: 'viewer',
+        level: 10,
+        permissions: ['post.read']
+      });
+
+      const subject: Subject = { id: '1', roles: ['viewer', 'editor'], permissions: [] };
+
+      const result = await engine.can(subject, 'post.read');
+
+      expect(result.allowed).toBe(true);
+      expect(result.permission).toBe('post.read');
+    });
+
+    it('should deny access when lower level role lacks permission of higher level role', async () => {
+      engine.addRole({
+        name: 'editor',
+        level: 50,
+        permissions: ['post.update']
+      });
+
+      engine.addRole({
+        name: 'viewer',
+        level: 10,
+        permissions: ['post.read']
+      });
+
+      const subject: Subject = { id: '1', roles: ['viewer'], permissions: [] };
+
+      const result = await engine.can(subject, 'post.update');
+
+      expect(result.allowed).toBe(false);
+    });
+
+    it('should resolve roles sorted by level in descending order', async () => {
+      engine.addRole({
+        name: 'admin',
+        level: 100,
+        permissions: ['post.delete']
+      });
+
+      engine.addRole({
+        name: 'editor',
+        level: 50,
+        permissions: ['post.update']
+      });
+
+      engine.addRole({
+        name: 'viewer',
+        level: 10,
+        permissions: ['post.read']
+      });
+
+      const subject: Subject = {
+        id: '1',
+        roles: ['viewer', 'admin', 'editor'],
+        permissions: []
+      };
+
+      // Subject should have access to all permissions from all roles
+      const readResult = await engine.can(subject, 'post.read');
+      const updateResult = await engine.can(subject, 'post.update');
+      const deleteResult = await engine.can(subject, 'post.delete');
+
+      expect(readResult.allowed).toBe(true);
+      expect(updateResult.allowed).toBe(true);
+      expect(deleteResult.allowed).toBe(true);
+    });
+
+    it('should combine permissions from multiple roles regardless of level', async () => {
+      engine.addRole({
+        name: 'moderator',
+        level: 30,
+        permissions: ['comment.delete', 'comment.edit']
+      });
+
+      engine.addRole({
+        name: 'writer',
+        level: 40,
+        permissions: ['post.create', 'post.edit']
+      });
+
+      const subject: Subject = {
+        id: '1',
+        roles: ['moderator', 'writer'],
+        permissions: []
+      };
+
+      // Should have permissions from both roles
+      const commentDeleteResult = await engine.can(subject, 'comment.delete');
+      const postCreateResult = await engine.can(subject, 'post.create');
+
+      expect(commentDeleteResult.allowed).toBe(true);
+      expect(postCreateResult.allowed).toBe(true);
+    });
+  });
 });

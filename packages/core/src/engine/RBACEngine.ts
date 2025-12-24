@@ -25,7 +25,7 @@ export class RBACEngine {
     permission: string,
     context: AuthorizationContext = {}
   ): Promise<Authorization> => {
-    const permissions: Set<PermissionName> = this.getPermissions(subject);
+    const permissions: Set<PermissionName> = this.resolvePermissions(subject);
 
     const matchedPermission = [...permissions].some((perm) =>
       Permission.match(perm, permission)
@@ -62,30 +62,37 @@ export class RBACEngine {
     };
   };
 
-  private getPermissions = (subject: Subject): Set<PermissionName> => {
+  private resolvePermissions = (subject: Subject): Set<PermissionName> => {
     const prms = new Set<PermissionName>(subject.permissions);
 
-    const visitedRoles = new Set<string>();
-    const visited = (roleName: string) => {
-      if (visitedRoles.has(roleName)) return;
+    const resolvedRoles = this.resolveRoles(subject.roles);
 
-      visitedRoles.add(roleName);
+    for (const role of resolvedRoles) {
+      role.permissions.forEach((p) => prms.add(p));
+    }
 
-      const role = this.roles.get(roleName);
-
-      if (role) {
-        role.permissions.forEach((perm: PermissionName) => prms.add(perm));
-
-        role.inherits?.forEach((parentRoleName: string) => {
-          visited(parentRoleName);
-        });
-      }
-
-      return;
-    };
-
-    subject.roles.forEach((roleName: string) => visited(roleName));
+    subject.permissions?.forEach((p: string) => prms.add(p));
 
     return prms;
   };
+
+  private resolveRoles(roleNames: string[]): Role[] {
+    const visited = new Set<string>();
+    const roles: Role[] = [];
+
+    const visit = (name: string) => {
+      if (visited.has(name)) return;
+      visited.add(name);
+
+      const role = this.roles.get(name);
+      if (!role) return;
+
+      role.inherits?.forEach(visit);
+      roles.push(role);
+    };
+
+    roleNames.forEach(visit);
+
+    return roles.sort((a, b) => b.level - a.level);
+  }
 }
